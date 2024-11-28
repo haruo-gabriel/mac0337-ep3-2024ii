@@ -1,6 +1,10 @@
-#N canvas 954 536 948 459 12;
-#X obj 32 44 ofelia d -s11;
-#X msg 32 19 read -c karplusstrong~.lua;
-#X msg 85 110 440 1;
+#N canvas 954 0 948 995 12;
+#X obj 105 110 ofelia d -s11;
+#X msg 105 85 read -c karplusstrong~.lua;
+#X obj 51 46 inlet;
+#X obj 105 135 outlet~;
+#X obj 105 60 loadbang;
+#X connect 0 0 3 0;
 #X connect 1 0 0 0;
 #X connect 2 0 0 0;
+#X connect 4 0 1 0;
