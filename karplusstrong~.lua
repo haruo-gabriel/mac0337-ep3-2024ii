@@ -1,12 +1,7 @@
 -- Variáveis locais
 local tabelaKS = ofTable()
--- Tabelas auxiliares
-local tabelaKS_antes = ofTable()
-local tabelaKS_depois = ofTable()
---
 local R = ofGetSampleRate()
 local L = 0
-
 local indice_tabela = 1
 local amostras_processadas_fadeout = 0
 local duracao_em_amostras
@@ -47,15 +42,6 @@ function ofelia.list(lista)
     tabelaKS[i] = tabelaKS[i] - media
   end
 
-
-  -- Preenche as tabelas auxiliares
-  -- for i=1, L do
-  --   tabelaKS_antes[i] = tabelaKS[i]
-  -- end
-  -- for i=1, L do
-  --   tabelaKS_depois = 0.5 * (tabelaKS[i] + tabelaKS[(i-2)%L+1])
-  -- end
-
   -- Imprime tabelaKS em 1 linha
   local tabelaKS_str = {}
   for i=1, L do
@@ -70,7 +56,15 @@ function ofelia.list(lista)
   -- end
 end
 
-
+function passa_baixa()
+  local tabelaKS_filtrada = ofTable()
+  for i=1, L do
+    tabelaKS_filtrada[i] = 0.5 * (tabelaKS[i] + tabelaKS[(i-2)%L+1])
+  end
+  for i=1, L do
+    tabelaKS[i] = tabelaKS_filtrada[i]
+  end
+end
 
 function ofelia.perform(bloco)
   -- Preenche o bloco de 64 amostras
@@ -87,18 +81,13 @@ function ofelia.perform(bloco)
       end
     end
 
-    -- Atualiza tabelaKS com média móvel
-    tabelaKS[indice_tabela] = 0.5 * (tabelaKS[indice_tabela] + tabelaKS[(indice_tabela-2)%L+1])
-
     -- Incrementa índices globais
     indice_tabela = (indice_tabela % L) + 1
     amostras_processadas = amostras_processadas + 1
   end
 
-  -- -- Atualiza as tabelas KS
-  -- for i=1, 64 do
-  --   tabelaKS_depois[indice_tabela] = 0.5 * (tabelaKS[indice_tabela] + tabelaKS[(indice_tabela-2)%L+1])
-  -- end
+  -- Atualiza tabelaKS com passa-baixa
+  passa_baixa()
 
   return bloco
 end
