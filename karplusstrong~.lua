@@ -3,10 +3,9 @@ local tabelaKS = ofTable()
 local R = ofGetSampleRate()
 local L = 0
 local A = 0
-local indice_tabela = 1
-local amostras_processadas_fadeout = 0
-local duracao_em_amostras
-local amostras_processadas = 0
+local ind_tab = 1 -- índice da tabela KS
+local dur_am      -- duração em amostras
+local am_proc = 0 -- amostras processadas
 
 
 -- Função auxiliar para calcular a média de uma lista
@@ -21,9 +20,8 @@ end
 -- Processa a lista de entrada
 function ofelia.list(lista)
   -- Inicializa variáveis
-  amostras_processadas_fadeout = 1
-  indice_tabela = 1
-  amostras_processadas = 0
+  ind_tab = 1
+  am_proc = 0
 
   local F = lista[1]
   print('F: ' .. F)
@@ -34,7 +32,7 @@ function ofelia.list(lista)
   A = lista[3]
   print('A: ' .. A)
 
-  duracao_em_amostras = math.floor(D*R + 0.5)
+  dur_am = math.floor(D*R + 0.5)
 
   -- Inicializa tabelaKS
   for i=1, L do
@@ -73,30 +71,24 @@ end
 function ofelia.perform(bloco)
   -- Preenche o bloco de 64 amostras
   for i=1, 64 do
-    if amostras_processadas < A*L then
+    if (am_proc < A*L) or (am_proc > dur_am) then
+      -- Processa pós-fadeout & ataque
       bloco[i] = 0
+    elseif am_proc > (dur_am - 10) then
+      -- Processa fadeout
+      bloco[i] = bloco[i] * (1 - (dur_am - am_proc)/10)
     else
-      bloco[i] = tabelaKS[indice_tabela]
+      bloco[i] = tabelaKS[ind_tab]
     end
 
     -- Atualiza tabelaKS com passa-baixa
-    if amostras_processadas % L == 1 then
+    if ind_tab == 1 then
       passa_baixa()
     end
 
-    -- Processa fade-out
-    if amostras_processadas > (duracao_em_amostras - 10) then
-      if amostras_processadas_fadeout < 10 then
-        bloco[i] = bloco[i] * (1 - amostras_processadas_fadeout/10)
-        amostras_processadas_fadeout = amostras_processadas_fadeout + 1
-      else
-        bloco[i] = 0
-      end
-    end
-
     -- Incrementa índices globais
-    indice_tabela = (indice_tabela % L) + 1
-    amostras_processadas = amostras_processadas + 1
+    ind_tab = (ind_tab % L) + 1
+    am_proc = am_proc + 1
   end
 
   return bloco
