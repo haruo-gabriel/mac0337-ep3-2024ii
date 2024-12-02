@@ -1,7 +1,7 @@
-#N canvas 847 314 542 341 12;
-#X obj 47 91 karplusstrong~;
-#X obj 47 116 dac~;
-#X msg 47 66 220 2;
+#N canvas 1012 334 377 210 12;
+#X obj 16 36 karplusstrong~;
+#X obj 16 61 dac~;
+#X msg 16 11 220 2;
 #X connect 0 0 1 0;
 #X connect 0 0 1 1;
 #X connect 2 0 0 0;
