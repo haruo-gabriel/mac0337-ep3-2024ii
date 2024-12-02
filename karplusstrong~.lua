@@ -12,7 +12,6 @@ local S = 1       -- parâmetro de encurtamento [0, 1]
 local Rho = 0.5   -- parâmetro de prolongamento [0, 0.5]
 local C = 0
 
-
 -- Função auxiliar para calcular a média de uma lista
 function mediaTabela(n_amostras)
   local soma = 0
