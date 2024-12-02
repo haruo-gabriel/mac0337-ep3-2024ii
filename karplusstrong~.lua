@@ -71,6 +71,11 @@ function ofelia.perform(bloco)
   for i=1, 64 do
     bloco[i] = tabelaKS[indice_tabela]
 
+    -- Atualiza tabelaKS com passa-baixa
+    if amostras_processadas % L == 1 then
+      passa_baixa()
+    end
+
     -- Processa fade-out
     if amostras_processadas > (duracao_em_amostras - 10) then
       if amostras_processadas_fadeout < 10 then
@@ -85,9 +90,6 @@ function ofelia.perform(bloco)
     indice_tabela = (indice_tabela % L) + 1
     amostras_processadas = amostras_processadas + 1
   end
-
-  -- Atualiza tabelaKS com passa-baixa
-  passa_baixa()
 
   return bloco
 end
