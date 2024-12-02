@@ -1,8 +1,8 @@
-#N canvas 954 1112 948 443 12;
+#N canvas 954 1112 948 963 12;
 #X obj 16 36 karplusstrong~;
 #X obj 16 61 dac~;
-#X msg 16 11 220 5 0;
-#X msg 90 11 220 5 20;
+#X msg 16 11 440 5 0;
+#X msg 90 11 660 5 20;
 #X connect 0 0 1 0;
 #X connect 0 0 1 1;
 #X connect 2 0 0 0;
