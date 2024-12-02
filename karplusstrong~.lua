@@ -8,8 +8,9 @@ local A = 0
 local ind_tab = 1 -- índice da tabela KS
 local dur_am      -- duração em amostras
 local am_proc = 0 -- amostras processadas
-local enc = 1     -- parâmetro de encurtamento [0, 1]
-local prol = 0.5  -- parâmetro de prolongamento [0, 0.5]
+local S = 1       -- parâmetro de encurtamento [0, 1]
+local Rho = 0.5   -- parâmetro de prolongamento [0, 0.5]
+local C = 0
 
 
 -- Função auxiliar para calcular a média de uma lista
@@ -23,19 +24,26 @@ end
 
 -- Função auxiliar para calcular parâmetros de encurtamento
 -- e prolongamento da função de filtro
-function calcula_enc_pro(F, D, R)
+function calcula_S_Rho(F, D, R)
   local g0 = math.cos(math.pi*F/R)
   local g1 = 10^(-3/(F*D))
 
   if g0 >= g1 then
-    enc = g1 / g0
-    prol = 0.5
+    S = g1 / g0
+    Rho = 0.5
   else
-    enc = 1
+    S = 1
     local numerador = 4*(1-g1^2)
     local denominador = 2 - 2*math.cos(2*math.pi*F/R)
-    prol = 0.5 - 0.5*(math.sqrt(1 - numerador/denominador))
+    Rho = 0.5 - 0.5*(math.sqrt(1 - numerador/denominador))
   end
+
+  return S, Rho
+end
+
+function calcula_C(F, R, L, S)
+  local delta = R*F - (L+S)
+  return (1 - delta)/(1 + delta)
 end
 
 -- Processa a lista de entrada
@@ -45,17 +53,13 @@ function ofelia.list(lista)
   am_proc = 0
 
   F = lista[1]
-  print('F: ' .. F)
   D = lista[2]
-  print('D: ' .. D)
   A = lista[3]
-  print('A: ' .. A)
+  S, Rho = calcula_S_Rho(F, D, R)
+  L = math.floor(R/F - Rho)
+  C = calcula_C(F, R, L, S)
 
   dur_am = math.floor(D*R + 0.5)
-
-  calcula_enc_pro(F, D, R)
-
-  L = math.floor(R/F - prol)
 
   -- Inicializa tabelaKS
   for i=1, L do
@@ -67,28 +71,36 @@ function ofelia.list(lista)
   end
 
   -- Imprime tabelaKS em 1 linha
-  local tabelaKS_str = {}
-  for i=1, L do
-    tabelaKS_str[i] = tostring(tabelaKS[i])
-  end
-  print("Tabela KS: " .. table.concat(tabelaKS_str, ", "))
+  -- local tabelaKS_str = {}
+  -- for i=1, L do
+  --   tabelaKS_str[i] = tostring(tabelaKS[i])
+  -- end
+  -- print("Tabela KS: " .. table.concat(tabelaKS_str, ", "))
 
   -- Imprime tabelaKS em várias linhas
   -- print("tabelaKS: ")
   -- for i=1, L do
   --   print(tabelaKS[i])
   -- end
-  print("")
+  print("Pinçando com F = " .. F .. ", D = " .. D .. ", A = " .. A)
 end
 
 function passa_baixa()
   local tabelaKS_filtrada = ofTable()
   for i=1, L do
-    tabelaKS_filtrada[i] = enc * ((1-prol)*tabelaKS[i] + prol*tabelaKS[(i-2)%L+1])
+    tabelaKS_filtrada[i] = S * ((1-Rho)*tabelaKS[i] + Rho*tabelaKS[(i-2)%L+1])
   end
+
+  return tabelaKS_filtrada
+end
+
+function passa_tudo()
+  local tabelaKS_filtrada = ofTable()
+  tabelaKS_filtrada[L] = tabelaKS[L]
   for i=1, L do
-    tabelaKS[i] = tabelaKS_filtrada[i]
+    tabelaKS_filtrada[i] = C*tabelaKS[i] + tabelaKS[(i-2)%L+1] - C*tabelaKS_filtrada[(i-2)%L+1]
   end
+  return tabelaKS_filtrada
 end
 
 function ofelia.perform(bloco)
@@ -106,7 +118,8 @@ function ofelia.perform(bloco)
 
     -- Atualiza tabelaKS com passa-baixa
     if ind_tab == 1 then
-      passa_baixa()
+      tabelaKS = passa_baixa()
+      tabelaKS = passa_tudo()
     end
 
     -- Incrementa índices globais
