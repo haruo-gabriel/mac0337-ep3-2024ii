@@ -2,6 +2,7 @@
 local tabelaKS = ofTable()
 local R = ofGetSampleRate()
 local L = 0
+local A = 0
 local indice_tabela = 1
 local amostras_processadas_fadeout = 0
 local duracao_em_amostras
@@ -30,6 +31,8 @@ function ofelia.list(lista)
   print('D: ' .. D)
   L = math.floor(R/F)
   print('L: ' .. L)
+  A = lista[3]
+  print('A: ' .. A)
 
   duracao_em_amostras = math.floor(D*R + 0.5)
 
@@ -54,6 +57,7 @@ function ofelia.list(lista)
   -- for i=1, L do
   --   print(tabelaKS[i])
   -- end
+  print("")
 end
 
 function passa_baixa()
@@ -69,7 +73,11 @@ end
 function ofelia.perform(bloco)
   -- Preenche o bloco de 64 amostras
   for i=1, 64 do
-    bloco[i] = tabelaKS[indice_tabela]
+    if amostras_processadas < A*L then
+      bloco[i] = 0
+    else
+      bloco[i] = tabelaKS[indice_tabela]
+    end
 
     -- Atualiza tabelaKS com passa-baixa
     if amostras_processadas % L == 1 then
