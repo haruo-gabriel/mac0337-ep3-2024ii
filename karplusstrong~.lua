@@ -56,7 +56,7 @@ function ofelia.list(lista)
   D = lista[2]
   A = lista[3]
   S, Rho = calcula_S_Rho(F, D, R)
-  L = math.floor(R/F - Rho)
+  L = math.floor(R/F - S)
   C = calcula_C(F, R, L, S)
 
   dur_am = math.floor(D*R + 0.5)
