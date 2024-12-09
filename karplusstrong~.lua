@@ -8,8 +8,8 @@ local A = 0
 local ind_tab = 1 -- índice da tabela KS
 local dur_am      -- duração em amostras
 local am_proc = 0 -- amostras processadas
-local S = 1       -- parâmetro de encurtamento [0, 1]
-local Rho = 0.5   -- parâmetro de prolongamento [0, 0.5]
+local S = 0.5       -- parâmetro de encurtamento [0, 1]
+local Rho = 1   -- parâmetro de prolongamento [0, 0.5]
 local C = 0
 
 -- Função auxiliar para calcular a média de uma lista
@@ -26,18 +26,19 @@ end
 function calcula_S_Rho(F, D, R)
   local g0 = math.cos(math.pi*F/R)
   local g1 = 10^(-3/(F*D))
+  local s, rho
 
   if g0 >= g1 then
-    S = g1 / g0
-    Rho = 0.5
+    rho = g1 / g0
+    s = 0.5
   else
-    S = 1
+    rho = 1
     local numerador = 4*(1-g1^2)
     local denominador = 2 - 2*math.cos(2*math.pi*F/R)
-    Rho = 0.5 - 0.5*(math.sqrt(1 - numerador/denominador))
+    s = 0.5 - 0.5*(math.sqrt(1 - numerador/denominador))
   end
 
-  return S, Rho
+  return s, rho
 end
 
 function calcula_C(F, R, L, S)
@@ -87,7 +88,7 @@ end
 function passa_baixa()
   local tabelaKS_filtrada = ofTable()
   for i=1, L do
-    tabelaKS_filtrada[i] = S * ((1-Rho)*tabelaKS[i] + Rho*tabelaKS[(i-2)%L+1])
+    tabelaKS_filtrada[i] = Rho * ((1-S)*tabelaKS[i] + S*tabelaKS[(i-2)%L+1])
   end
 
   return tabelaKS_filtrada
